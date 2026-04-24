@@ -1,0 +1,19 @@
+{
+  "date": "2026-04-24",
+  "messages": [
+    {
+      "timestamp": "2026-04-24T12:20:45.576545",
+      "speaker": "parent",
+      "role": "user",
+      "content": "小升初怎么规划？",
+      "skill_used": "xiaoshengchu_planner"
+    },
+    {
+      "timestamp": "2026-04-24T12:20:45.577029",
+      "speaker": "xiaoban",
+      "role": "assistant",
+      "content": "根据您的情况，建议...",
+      "skill_used": "xiaoshengchu_planner"
+    }
+  ]
+}

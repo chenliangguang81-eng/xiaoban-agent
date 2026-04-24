@@ -1,0 +1,22 @@
+{
+  "name": "小可爱",
+  "grade": "六年级",
+  "school": "北京市海淀区七一小学",
+  "school_district": "海淀区",
+  "home_address": "北京市丰台区丰台东大街5号院",
+  "home_district": "丰台区",
+  "guardian": {
+    "name": "Lion",
+    "email": "24525837@qq.com",
+    "location": "洛杉矶"
+  },
+  "personality": {
+    "learning_style": "视觉型"
+  },
+  "interests": [],
+  "strengths": [],
+  "weaknesses": [],
+  "academic_level": {},
+  "created_at": "2026-04-24T12:20:39.571593",
+  "updated_at": "2026-04-24T12:20:45.574296"
+}

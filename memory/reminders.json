@@ -1,0 +1,44 @@
+{
+  "pending": [
+    {
+      "type": "mistake_review",
+      "mistake_id": "m_20260424122045",
+      "trigger_date": "2026-04-25",
+      "message": "复习错题：math-分数加减法: 3/4+1/6",
+      "created_at": "2026-04-24T12:20:45.575210",
+      "triggered": false
+    },
+    {
+      "type": "mistake_review",
+      "mistake_id": "m_20260424122045",
+      "trigger_date": "2026-04-27",
+      "message": "复习错题：math-分数加减法: 3/4+1/6",
+      "created_at": "2026-04-24T12:20:45.575430",
+      "triggered": false
+    },
+    {
+      "type": "mistake_review",
+      "mistake_id": "m_20260424122045",
+      "trigger_date": "2026-05-01",
+      "message": "复习错题：math-分数加减法: 3/4+1/6",
+      "created_at": "2026-04-24T12:20:45.575642",
+      "triggered": false
+    },
+    {
+      "type": "mistake_review",
+      "mistake_id": "m_20260424122045",
+      "trigger_date": "2026-05-09",
+      "message": "复习错题：math-分数加减法: 3/4+1/6",
+      "created_at": "2026-04-24T12:20:45.575855",
+      "triggered": false
+    },
+    {
+      "type": "mistake_review",
+      "mistake_id": "m_20260424122045",
+      "trigger_date": "2026-05-24",
+      "message": "复习错题：math-分数加减法: 3/4+1/6",
+      "created_at": "2026-04-24T12:20:45.576119",
+      "triggered": false
+    }
+  ]
+}
