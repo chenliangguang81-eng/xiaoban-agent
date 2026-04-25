@@ -1,0 +1,12 @@
+{
+  "date": "2026-04-25",
+  "messages": [
+    {
+      "timestamp": "2026-04-25T04:03:24.474804",
+      "speaker": "parent",
+      "role": "user",
+      "content": "五十七中的1+3项目怎么申请？",
+      "skill_used": "general"
+    }
+  ]
+}

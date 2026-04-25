@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-04-25T03:59:54.663631",
+  "overall_score": 75,
+  "diagnosis_summary": "小可爱近期综合学情评分为 75/100。主要需要关注「未知」问题，建议重点突破「分数加减法」。小伴将持续陪伴，一起加油！",
+  "mistake_analysis": {
+    "total_mistakes": 2,
+    "error_type_distribution": {
+      "unknown": 2
+    },
+    "subject_distribution": {
+      "math": 2
+    },
+    "weak_knowledge_points": [
+      {
+        "knowledge_point": "分数加减法",
+        "error_count": 2
+      }
+    ],
+    "dominant_error_type": "unknown",
+    "dominant_error_description": "未知",
+    "dominant_error_remediation": ""
+  },
+  "dialogue_analysis": {
+    "total_messages": 2,
+    "active_days": 0,
+    "subject_focus": {},
+    "question_types": {
+      "提问": 1,
+      "升学规划": 1
+    },
+    "engagement_score": 4,
+    "analysis_period_days": 30
+  },
+  "study_plan_next_14_days": [
+    {
+      "date": "2026-04-26",
+      "knowledge_point": "分数加减法",
+      "review_round": 1,
+      "task": "第1轮复习：分数加减法",
+      "estimated_minutes": 30
+    },
+    {
+      "date": "2026-04-27",
+      "knowledge_point": "分数加减法",
+      "review_round": 2,
+      "task": "第2轮复习：分数加减法",
+      "estimated_minutes": 26
+    },
+    {
+      "date": "2026-04-29",
+      "knowledge_point": "分数加减法",
+      "review_round": 3,
+      "task": "第3轮复习：分数加减法",
+      "estimated_minutes": 22
+    },
+    {
+      "date": "2026-05-02",
+      "knowledge_point": "分数加减法",
+      "review_round": 4,
+      "task": "第4轮复习：分数加减法",
+      "estimated_minutes": 18
+    },
+    {
+      "date": "2026-05-10",
+      "knowledge_point": "分数加减法",
+      "review_round": 5,
+      "task": "第5轮复习：分数加减法",
+      "estimated_minutes": 14
+    },
+    {
+      "date": "2026-05-25",
+      "knowledge_point": "分数加减法",
+      "review_round": 6,
+      "task": "第6轮复习：分数加减法",
+      "estimated_minutes": 10
+    }
+  ],
+  "urgent_actions": [
+    {
+      "priority": "medium",
+      "action": "重点突破「分数加减法」，每天练习15分钟",
+      "reason": "该知识点出错 2 次，是最薄弱环节"
+    }
+  ]
+}
