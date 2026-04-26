@@ -1,5 +1,5 @@
 """
-小伴 FastAPI Web 服务 v1.0
+小伴 FastAPI Web 服务 v5.1
 提供 RESTful API 接口，使小伴可作为后端服务部署。
 
 接口列表：
@@ -90,6 +90,18 @@ def get_simulator():
         from engines.xiaoshengchu_simulator import XiaoshengchuSimulator
         _engines["simulator"] = XiaoshengchuSimulator()
     return _engines["simulator"]
+
+def get_mythos_engine():
+    if "mythos" not in _engines:
+        from engines.mythos_identity_engine import MythosIdentityEngine, InteractionContext
+        _engines["mythos"] = MythosIdentityEngine()
+    return _engines["mythos"]
+
+def get_proactive_engine():
+    if "proactive" not in _engines:
+        from engines.proactive_sharing_engine import ProactiveSharingEngine
+        _engines["proactive"] = ProactiveSharingEngine(str(BASE_DIR))
+    return _engines["proactive"]
 
 # ─────────────────────────────────────────────
 # 请求/响应模型
@@ -185,9 +197,29 @@ async def chat(request: ChatRequest):
         # 意图识别（返回字符串）
         intent_str = llm_core.detect_intent(request.message)
         
-        # RAG 检索增强
+        # ── Mythos 身份锚定注入 ──────────────────────────────────────────
+        mythos_system_addon = ""
+        try:
+            from engines.mythos_identity_engine import InteractionContext
+            mythos = get_mythos_engine()
+            pressure_level = mythos.evaluate_pressure_level(request.message)
+            user_emotion = "anxious" if any(kw in request.message for kw in ["焦虑", "担心", "压力", "紧张"]) else "calm"
+            ctx = InteractionContext(
+                user_role=request.speaker if request.speaker in ["student", "parent"] else "parent",
+                grade=6,
+                topic=intent_str,
+                user_emotion=user_emotion,
+                pressure_level=pressure_level
+            )
+            mythos_system_addon = mythos.generate_identity_prompt(ctx)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Mythos API 注入失败: {e}")
+        # ─────────────────────────────────────────────────────────────────
+        
+        # RAG 检索增强（注入 Mythos 上下文）
         rag = get_rag()
-        rag_result = rag.query(request.message, student_context)
+        rag_result = rag.query(request.message, student_context, system_addon=mythos_system_addon)
         
         # 记录对话历史
         memory.append_dialogue(
@@ -202,7 +234,7 @@ async def chat(request: ChatRequest):
         return ChatResponse(
             reply=rag_result["answer"],
             intent=intent_str,
-            skill_used="rag_engine",
+            skill_used="rag_engine+mythos",
             latency_ms=round(elapsed, 1),
             sources=rag_result.get("sources", [])
         )
@@ -371,6 +403,57 @@ async def get_policy_alerts(days: int = 7):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/proactive/briefing")
+async def get_proactive_briefing():
+    """
+    获取每日主动简报（Mythos: Proactive Information Sharing）
+    包含：时间节点提醒、政策动态、学情摘要
+    """
+    try:
+        proactive = get_proactive_engine()
+        memory = get_memory()
+        monitor = get_monitor()
+        
+        # 获取记忆数据
+        profile = memory.get_profile()
+        
+        # 获取政策预警
+        policy_alerts = monitor.get_recent_alerts(days=3)
+        
+        # 生成每日简报
+        briefing = proactive.generate_daily_briefing(
+            memory_data={
+                "mistake_book": {},
+                "dialogue_history": {}
+            },
+            policy_alerts=policy_alerts
+        )
+        
+        return {
+            "student": profile.get("name", "小可爱"),
+            "briefing": briefing,
+            "generated_at": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"简报生成失败: {str(e)}")
+
+@app.post("/ethical/dilemma")
+async def handle_ethical_dilemma(
+    instruction: str,
+    context: str = "",
+    speaker: str = "parent"
+):
+    """
+    道德困境处理接口（Mythos: Ethical Resilience）
+    处理家长指令与学生利益冲突
+    """
+    try:
+        from skills.psychology_companion import ethical_dilemma_handler
+        result = ethical_dilemma_handler(instruction, context, speaker)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"道德判断失败: {str(e)}")
 
 # ─────────────────────────────────────────────
 # 启动入口
