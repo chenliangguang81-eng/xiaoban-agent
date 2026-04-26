@@ -19,16 +19,12 @@ acknowledges when it might be wrong, and models good epistemic practices."
 - 学习效率低下时（诊断方法问题，不只是努力不够）
 - 自我评价偏差时（过度自信或过度自我否定）
 """
+from engines.llm_core import llm_call, get_llm_router
 import json
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
-client = OpenAI()
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 元认知维度定义
 # ─────────────────────────────────────────────────────────────────────────────

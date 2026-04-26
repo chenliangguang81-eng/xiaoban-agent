@@ -4,13 +4,12 @@
 重构：统一使用 MemoryManager 管理所有记忆读写
 Mythos 升级：接入 MythosIdentityEngine，实现身份锚定自动注入
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import os
 import sys
 from pathlib import Path
 from datetime import datetime
-from openai import OpenAI
-
 # ── 路径常量 ──────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 MEMORY_DIR = BASE_DIR / "memory"
@@ -20,8 +19,6 @@ KB_DIR = BASE_DIR / "knowledge_base"
 sys.path.insert(0, str(BASE_DIR))
 
 # ── OpenAI 客户端 ─────────────────────────────────────────────────────────────
-client = OpenAI()
-
 # ── MemoryManager 单例 ────────────────────────────────────────────────────────
 from memory.memory_manager import MemoryManager
 from engines.mythos_identity_engine import MythosIdentityEngine, InteractionContext
@@ -187,13 +184,12 @@ def chat(user_input: str) -> str:
     messages.append({"role": "user", "content": user_input})
 
     # 5. 调用 LLM
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.7,
-        max_tokens=1500,
-    )
-    reply = response.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_response = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_response = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_response = [x for x in messages if x['role'] not in ('system',)][:-1]
+    response_reply = llm_call(_llm_usr_response, _llm_sys_response, _llm_hist_response)
+    reply = response_reply.strip()
 
     # 6. 写回记忆（通过 MemoryManager）
     mem.append_dialogue("user", user_input, speaker=speaker, skill_used=skills[0] if skills else None)

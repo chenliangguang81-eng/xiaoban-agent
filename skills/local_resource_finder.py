@@ -2,10 +2,7 @@
 技能：local_resource_finder
 丰台东大街 5 号院周边学习资源推荐
 """
-
-from openai import OpenAI
-
-client = OpenAI()
+from engines.llm_core import llm_call, get_llm_router
 
 # 静态资源库（需定期人工更新）
 LOCAL_RESOURCES = {
@@ -40,10 +37,9 @@ def find_resources(query: str) -> str:
         {"role": "system", "content": SKILL_PROMPT},
         {"role": "user", "content": f"查询：{query}\n\n本地资源库：{json.dumps(LOCAL_RESOURCES, ensure_ascii=False)}"}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.5,
-        max_tokens=600,
-    )
-    return resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    return resp_reply.strip()

@@ -3,11 +3,9 @@
 张雪峰经验蒸馏顾问
 涵盖：学习方法论 / 考试心法 / 读书方法论 / 专业与院校观
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import os
-from openai import OpenAI
-
-client = OpenAI()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_DIR = os.path.join(BASE_DIR, "knowledge_base", "zhang_xuefeng_corpus")
 
@@ -74,10 +72,9 @@ def advise(query: str, audience: str = "parent") -> str:
         {"role": "system", "content": SKILL_PROMPT + f"\n\n## 当前受众\n{audience_note}"},
         {"role": "user", "content": f"咨询内容：{query}\n\n本地语料补充：{corpus_context[:2000] if corpus_context else '（暂无本地语料）'}"}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.65,
-        max_tokens=1200,
-    )
-    return resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    return resp_reply.strip()

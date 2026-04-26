@@ -2,12 +2,10 @@
 技能：homework_coach
 作业辅导（苏格拉底式提问，不直接给答案）
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import os
-from openai import OpenAI
-
-client = OpenAI()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEMORY_DIR = os.path.join(BASE_DIR, "memory")
 
@@ -31,27 +29,24 @@ def coach(question: str, context: str = "") -> dict:
         {"role": "system", "content": SKILL_PROMPT},
         {"role": "user", "content": f"学生的问题：{question}\n补充背景：{context}"}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.6,
-        max_tokens=800,
-    )
-    reply = resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    reply = resp_reply.strip()
 
     # 提取知识点标签（简单启发式）
     tag_messages = [
         {"role": "system", "content": "请从以下题目中提取：1.学科（语文/数学/英语/其他）2.知识点名称（5字以内）。只返回JSON格式：{\"subject\": \"...\", \"knowledge_point\": \"...\"}"},
         {"role": "user", "content": question}
     ]
-    tag_resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=tag_messages,
-        temperature=0,
-        max_tokens=100,
-    )
+    # [v5.2 Manus迁移] 统一路由器调用
+    _tag_sys = next((x['content'] for x in tag_messages if x['role']=='system'), '')
+    _tag_usr = next((x['content'] for x in reversed(tag_messages) if x['role']=='user'), '')
+    tag_resp_reply = llm_call(_tag_usr, _tag_sys)
     try:
-        tags = json.loads(tag_resp.choices[0].message.content.strip())
+        tags = json.loads(tag_resp_reply.strip())
     except Exception:
         tags = {"subject": "未知", "knowledge_point": "未知"}
 

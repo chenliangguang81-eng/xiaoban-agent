@@ -2,14 +2,12 @@
 小升初规划师技能（北京版）v2.0
 针对小可爱：七一小学学籍（海淀）+ 丰台东大街5号院户籍
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
-from openai import OpenAI
-
-client = OpenAI()
 BASE_DIR = Path(__file__).parent.parent
 KB_DIR = BASE_DIR / "knowledge_base"
 
@@ -378,13 +376,12 @@ def analyze_path(query: str, extra_context: str = "", memory_manager=None) -> st
             {"role": "system", "content": "你是北京小升初规划专家，专注于海淀学籍+丰台户籍的特殊情况分析。"},
             {"role": "user", "content": f"家长咨询：{query}\n补充背景：{extra_context}"}
         ]
-        resp = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=messages,
-            temperature=0.5,
-            max_tokens=1500,
-        )
-        report = resp.choices[0].message.content.strip()
+        # [v5.2 Manus迁移] 统一路由器调用
+        _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+        _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+        _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+        resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+        report = resp_reply.strip()
 
     return report
 

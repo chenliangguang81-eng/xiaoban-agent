@@ -2,10 +2,10 @@
 苏格拉底辅导引擎 v2.0 (LLM 驱动版)
 小伴 v4.0 升级
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import os
 import json
-from openai import OpenAI
 from typing import Dict, List, Optional
 
 class SocraticTutorEngineV2:
@@ -42,13 +42,9 @@ class SocraticTutorEngineV2:
 风格：{config['style']}，语气：{config['tone']}
 返回JSON：{{"error_type":"...","root_cause":"...","prerequisite_gap":"...","socratic_question":"...","confidence":0.9}}"""
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=500, temperature=0.3,
-                response_format={"type": "json_object"}
-            )
-            result = json.loads(response.choices[0].message.content)
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(prompt)
+            result = json.loads(response_reply)
             result["status"] = "success"
             return result
         except Exception as e:
@@ -64,13 +60,9 @@ class SocraticTutorEngineV2:
 风格：{config['style']}，语气：{config['tone']}
 返回JSON：{{"hints":["问题1","问题2","问题3"]}}"""
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=400, temperature=0.5,
-                response_format={"type": "json_object"}
-            )
-            result = json.loads(response.choices[0].message.content)
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(prompt)
+            result = json.loads(response_reply)
             return result.get("hints", ["你能告诉我，这道题考察的是什么知识点？"])
         except Exception as e:
             return [f"你觉得这道题的关键是什么？"]
@@ -86,13 +78,9 @@ class SocraticTutorEngineV2:
 语气：{config['tone']}
 返回JSON：{{"assessment":"correct/partial/incorrect","feedback":"...","next_hint":"...","encouragement":"..."}}"""
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=400, temperature=0.6,
-                response_format={"type": "json_object"}
-            )
-            result = json.loads(response.choices[0].message.content)
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(prompt)
+            result = json.loads(response_reply)
             result["status"] = "success"
             return result
         except Exception as e:

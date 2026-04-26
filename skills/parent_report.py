@@ -2,13 +2,11 @@
 技能：parent_report
 月度家长成长报告生成器
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import os
 from datetime import datetime
-from openai import OpenAI
-
-client = OpenAI()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEMORY_DIR = os.path.join(BASE_DIR, "memory")
 DIALOGUE_DIR = os.path.join(MEMORY_DIR, "dialogue_history")
@@ -82,13 +80,12 @@ def generate_report(period: str = None) -> str:
         {"role": "system", "content": "你是小伴的家长报告模块，专业、直率、数据驱动。"},
         {"role": "user", "content": prompt}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.5,
-        max_tokens=1200,
-    )
-    report = resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    report = resp_reply.strip()
 
     # 保存报告
     report_path = os.path.join(MEMORY_DIR, f"parent_report_{datetime.now().strftime('%Y%m')}.md")

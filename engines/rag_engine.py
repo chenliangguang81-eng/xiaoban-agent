@@ -10,6 +10,7 @@
   - 比纯 LLM 更准确（有知识库支撑，不会幻觉）
   - 比网络搜索更快（本地向量检索 <50ms）
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import os
@@ -305,18 +306,11 @@ class RAGEngine:
             from openai import OpenAI
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question}
-                ],
-                max_tokens=600,
-                temperature=0.2
-            )
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(question, system_prompt)
             
-            answer = response.choices[0].message.content
-            tokens_used = response.usage.total_tokens
+            answer = response_reply
+            tokens_used = 0
             
         except Exception as e:
             answer = f"[RAG 生成失败: {e}]\n\n基于检索到的资料摘要：\n{context[:500] if context else '无相关资料'}"

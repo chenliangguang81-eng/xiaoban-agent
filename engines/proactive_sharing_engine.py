@@ -20,16 +20,12 @@ as long as doing so isn't outweighed by other considerations."
 - 学情异常（连续错题、成绩下滑）：主动触发诊断
 - 重要日期临近：派位报名、面试准备等
 """
+from engines.llm_core import llm_call, get_llm_router
 import json
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
-client = OpenAI()
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 关键时间节点数据库（2026年小升初）
 # ─────────────────────────────────────────────────────────────────────────────

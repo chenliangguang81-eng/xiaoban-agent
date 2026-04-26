@@ -13,6 +13,7 @@
   - 小升初信息网 (xscxx.com)
   - 知乎升学专栏
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import hashlib
 import json
@@ -205,13 +206,9 @@ class PolicyMonitor:
 文章标题：{title}
 文章内容：{content[:1500]}"""
             
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=300,
-                temperature=0.1
-            )
-            return response.choices[0].message.content
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(prompt)
+            return response_reply
         except Exception as e:
             # 降级：返回内容前200字
             return content[:200] + "..."

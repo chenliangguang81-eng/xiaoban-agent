@@ -20,16 +20,12 @@ an outsized effect on society compared with a single individual doing the same t
 - 家长教育决策（提供框架，尊重家长最终决策权）
 - 学生价值观讨论（不灌输，引导自我发现）
 """
+from engines.llm_core import llm_call, get_llm_router
 import json
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
-client = OpenAI()
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 认知偏见类型定义
 # ─────────────────────────────────────────────────────────────────────────────
@@ -203,17 +199,9 @@ class EpistemicAutonomyEngine:
         """
         
         try:
-            resp = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.3,
-                max_tokens=800,
-                response_format={"type": "json_object"}
-            )
-            return json.loads(resp.choices[0].message.content)
+            # [v5.2 Manus迁移] 统一路由器调用
+            resp_reply = llm_call(user_prompt, system_prompt)
+            return json.loads(resp_reply)
         except Exception as e:
             logger.error(f"多视角分析失败: {e}")
             return {

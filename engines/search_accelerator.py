@@ -9,6 +9,7 @@
   - 搜索响应时间从 30-120s 降至 <3s（缓存命中）或 <10s（网络搜索）
   - 准确率通过"结果质量评分器"保证，低分结果自动降级或重搜
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import time
@@ -284,29 +285,14 @@ class L2ParallelSearchEngine:
             import os
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "你是一个专注于北京小升初教育政策的知识库。"
-                            "请用简洁、准确的方式回答问题。"
-                            "如果你不确定某个具体数据，请明确说明'需要核实'，不要编造数字。"
-                            "回答控制在300字以内。"
-                        )
-                    },
-                    {"role": "user", "content": query}
-                ],
-                max_tokens=400,
-                temperature=0.1  # 低温度保证准确性
-            )
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(query)
             
-            content = response.choices[0].message.content
+            content = response_reply
             return {
                 "type": "llm_knowledge",
                 "content": content,
-                "tokens_used": response.usage.total_tokens
+                "tokens_used": 0
             }
         except Exception:
             return None

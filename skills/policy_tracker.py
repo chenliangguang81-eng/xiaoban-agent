@@ -2,14 +2,12 @@
 技能：policy_tracker
 北京市/海淀区/丰台区教育政策追踪
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import os
 from datetime import datetime
 import requests
-from openai import OpenAI
-
-client = OpenAI()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_DIR = os.path.join(BASE_DIR, "knowledge_base", "beijing_education_policy")
 
@@ -53,13 +51,12 @@ def search_policy(query: str) -> str:
 4. 官方来源：北京市教委（jw.beijing.gov.cn）、海淀区教委、丰台区教委"""},
         {"role": "user", "content": f"政策查询：{query}\n\n本地政策库参考：{local_context if local_context else '（本地库为空，请基于通用知识回答）'}"}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.3,
-        max_tokens=1000,
-    )
-    return resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    return resp_reply.strip()
 
 
 def get_key_policies() -> list[dict]:

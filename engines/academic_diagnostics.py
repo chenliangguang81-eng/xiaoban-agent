@@ -7,6 +7,7 @@
   4. 推荐针对性练习计划（艾宾浩斯复习曲线）
   5. 与 GBrain 知识图谱联动，动态更新掌握度
 """
+from engines.llm_core import llm_call, get_llm_router
 
 import json
 import os
@@ -406,13 +407,9 @@ class AcademicDiagnosticsEngine:
 
 请用第一人称（小伴）写，语气温暖，重点突出1-2个最需要关注的问题。"""
             
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-                temperature=0.3
-            )
-            return response.choices[0].message.content
+            # [v5.2 Manus迁移] 统一路由器调用
+            response_reply = llm_call(prompt)
+            return response_reply
         except Exception:
             return (
                 f"小可爱近期综合学情评分为 {score}/100。"

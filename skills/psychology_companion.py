@@ -14,15 +14,12 @@ Claude Mythos 对应能力：
 - Psychological Wellbeing Model (心理健康模型)：关注长期心理健康
 - Care for User Wellbeing (关怀用户福祉)：将学生长期利益置于短期满足之上
 """
+from engines.llm_core import llm_call, get_llm_router
 import json
 import logging
 from datetime import datetime
 from typing import Optional, Dict, List, Tuple
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
-client = OpenAI()
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 核心提示词（Mythos 升级版）
 # ─────────────────────────────────────────────────────────────────────────────
@@ -115,13 +112,12 @@ def companion(user_message: str) -> str:
         {"role": "system", "content": SKILL_PROMPT},
         {"role": "user", "content": user_message}
     ]
-    resp = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=messages,
-        temperature=0.7,
-        max_tokens=600,
-    )
-    return resp.choices[0].message.content.strip()
+    # [v5.2 Manus迁移] 统一路由器调用
+    _llm_sys_resp = next((x['content'] for x in messages if x['role']=='system'), '')
+    _llm_usr_resp = next((x['content'] for x in reversed(messages) if x['role']=='user'), '')
+    _llm_hist_resp = [x for x in messages if x['role'] not in ('system',)][:-1]
+    resp_reply = llm_call(_llm_usr_resp, _llm_sys_resp, _llm_hist_resp)
+    return resp_reply.strip()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -311,17 +307,9 @@ def _llm_resolve_dilemma(
     """
     
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.3,
-            max_tokens=500,
-            response_format={"type": "json_object"}
-        )
-        result = json.loads(resp.choices[0].message.content)
+        # [v5.2 Manus迁移] 统一路由器调用
+        resp_reply = llm_call(user_prompt, system_prompt)
+        result = json.loads(resp_reply)
         return result
     except Exception as e:
         logger.error(f"LLM 道德判断失败: {e}")
@@ -531,16 +519,9 @@ def epistemic_care_mode(
     """
     
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.7,
-            max_tokens=200
-        )
-        return resp.choices[0].message.content.strip()
+        # [v5.2 Manus迁移] 统一路由器调用
+        resp_reply = llm_call(user_prompt, system_prompt)
+        return resp_reply.strip()
     except Exception as e:
         logger.error(f"认知关怀模式失败: {e}")
         return f"你说的让我很感兴趣。是什么让你有这个想法的？"
